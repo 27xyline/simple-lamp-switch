@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Лампочка</title>
+    <style>
+        :root {
+            --bg: #111318;
+            --text: #f7f3ea;
+            --muted: #9aa1ae;
+            --line: rgba(255, 255, 255, 0.1);
+            --panel: rgba(255, 255, 255, 0.06);
+            --amber: #ffc23f;
+            --green: #6fd66e;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 32px 18px;
+            background:
+                radial-gradient(circle at 50% 30%, rgba(255, 178, 50, 0.24), transparent 24rem),
+                linear-gradient(135deg, #1b1e24 0%, var(--bg) 55%, #0a0d12 100%);
+            color: var(--text);
+        }
+
+        main {
+            width: min(520px, 100%);
+            text-align: center;
+        }
+
+        .lamp-stage {
+            position: relative;
+            height: clamp(300px, 55vw, 430px);
+            display: grid;
+            place-items: end center;
+            margin-bottom: 28px;
+        }
+
+        .lamp-stage::after {
+            position: absolute;
+            bottom: 0;
+            width: min(320px, 78vw);
+            height: 42px;
+            content: "";
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(255, 173, 54, 0.36), rgba(255, 173, 54, 0.12) 38%, transparent 72%);
+            filter: blur(8px);
+            transition: opacity 180ms ease;
+        }
+
+        .lamp-shell {
+            position: relative;
+            z-index: 1;
+            width: clamp(220px, 48vw, 318px);
+            height: clamp(300px, 62vw, 420px);
+        }
+
+        .bulb {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 82%;
+            aspect-ratio: 0.86;
+            transform: translateX(-50%);
+            border: 5px solid rgba(255, 220, 153, 0.72);
+            border-radius: 50% 50% 44% 44% / 54% 54% 40% 40%;
+            background:
+                radial-gradient(circle at 45% 42%, rgba(255, 206, 85, 0.88), rgba(238, 140, 23, 0.34) 44%, rgba(255, 255, 255, 0.08) 65%, rgba(255, 255, 255, 0.03) 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.04) 58%);
+            box-shadow:
+                0 0 46px rgba(255, 190, 54, 0.56),
+                0 0 132px rgba(255, 169, 42, 0.3),
+                inset 18px 14px 34px rgba(255, 255, 255, 0.18),
+                inset -20px -24px 34px rgba(74, 37, 7, 0.26);
+            transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+        }
+
+        .bulb::before,
+        .bulb::after {
+            position: absolute;
+            content: "";
+            border-radius: 999px;
+            pointer-events: none;
+        }
+
+        .bulb::before {
+            top: 17%;
+            right: 16%;
+            width: 16px;
+            height: 118px;
+            transform: rotate(-38deg);
+            background: rgba(255, 255, 255, 0.44);
+            filter: blur(1px);
+        }
+
+        .bulb::after {
+            top: 25%;
+            left: 14%;
+            width: 18px;
+            height: 150px;
+            transform: rotate(14deg);
+            background: rgba(255, 255, 255, 0.16);
+            filter: blur(2px);
+        }
+
+        .filament {
+            position: absolute;
+            left: 50%;
+            top: 28%;
+            width: 34%;
+            height: 34%;
+            transform: translateX(-50%);
+            border: 4px solid rgba(255, 245, 183, 0.98);
+            border-right-color: transparent;
+            border-left-color: transparent;
+            border-bottom: 0;
+            border-radius: 50% 50% 0 0;
+            filter: drop-shadow(0 0 14px rgba(255, 236, 134, 0.9));
+        }
+
+        .filament::before,
+        .filament::after {
+            position: absolute;
+            bottom: -65px;
+            width: 3px;
+            height: 72px;
+            content: "";
+            background: linear-gradient(var(--amber), rgba(255, 194, 63, 0.16));
+            box-shadow: 0 0 10px rgba(255, 194, 63, 0.8);
+        }
+
+        .filament::before {
+            left: 24%;
+            transform: rotate(-7deg);
+        }
+
+        .filament::after {
+            right: 24%;
+            transform: rotate(7deg);
+        }
+
+        .neck {
+            position: absolute;
+            left: 50%;
+            bottom: 82px;
+            width: 86px;
+            height: 52px;
+            transform: translateX(-50%);
+            border: 1px solid rgba(255, 233, 151, 0.44);
+            border-radius: 12px 12px 8px 8px;
+            background: linear-gradient(90deg, rgba(255, 178, 54, 0.28), rgba(255, 233, 151, 0.62), rgba(255, 178, 54, 0.22));
+            box-shadow: inset 0 -12px 18px rgba(101, 50, 9, 0.3);
+        }
+
+        .base {
+            position: absolute;
+            left: 50%;
+            bottom: 14px;
+            width: 132px;
+            height: 108px;
+            transform: translateX(-50%);
+            border-radius: 22px 22px 44px 44px;
+            background:
+                repeating-linear-gradient(to bottom, #ece5d8 0 7px, #4f4c49 8px 15px, #1b1d20 16px 24px),
+                linear-gradient(90deg, #1d1f23, #f5ead5 44%, #1a1d22);
+            box-shadow:
+                inset 22px 0 26px rgba(0, 0, 0, 0.44),
+                inset -18px 0 22px rgba(255, 255, 255, 0.12),
+                0 18px 34px rgba(0, 0, 0, 0.42);
+        }
+
+        .base::after {
+            position: absolute;
+            left: 50%;
+            bottom: -18px;
+            width: 52px;
+            height: 36px;
+            transform: translateX(-50%);
+            content: "";
+            border-radius: 0 0 28px 28px;
+            background: linear-gradient(#1b1d20, #07080a);
+        }
+
+        .status-row {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 12px 18px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--panel);
+            color: var(--muted);
+            font-size: clamp(17px, 3vw, 20px);
+            font-weight: 650;
+        }
+
+        .status-row svg {
+            width: 23px;
+            height: 23px;
+            color: var(--green);
+            stroke-width: 2.2;
+        }
+
+        #status-value {
+            color: #ffd26a;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            width: min(420px, 100%);
+            min-height: 76px;
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: 20px;
+            background: linear-gradient(180deg, rgba(255, 232, 124, 0.94), var(--amber) 52%, #f3aa2b 100%);
+            color: #18212a;
+            box-shadow:
+                0 18px 34px rgba(238, 157, 26, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.68);
+            font: inherit;
+            font-size: clamp(24px, 5vw, 34px);
+            font-weight: 850;
+            cursor: pointer;
+            transition: transform 160ms ease, filter 160ms ease;
+        }
+
+        .toggle:hover {
+            filter: saturate(1.06) brightness(1.03);
+        }
+
+        .toggle:active {
+            transform: translateY(2px);
+        }
+
+        .toggle:focus-visible {
+            outline: 3px solid rgba(255, 255, 255, 0.86);
+            outline-offset: 5px;
+        }
+
+        .toggle svg {
+            width: 36px;
+            height: 36px;
+            stroke-width: 2.5;
+        }
+
+        .status-control {
+            margin-top: 34px;
+            padding-top: 22px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+        }
+
+        .status-control h1 {
+            margin: 0 0 10px;
+            color: var(--text);
+            font-size: 22px;
+            line-height: 1.2;
+        }
+
+        .status-control p {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.55;
+        }
+
+        code {
+            padding: 3px 7px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffd26a;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 0.95em;
+        }
+
+        body:not(.lamp-on) {
+            background:
+                radial-gradient(circle at 50% 30%, rgba(119, 128, 145, 0.12), transparent 23rem),
+                linear-gradient(135deg, #1a1d23 0%, var(--bg) 55%, #0b0e13 100%);
+        }
+
+        body:not(.lamp-on) .lamp-stage::after {
+            opacity: 0.18;
+        }
+
+        body:not(.lamp-on) .bulb {
+            border-color: rgba(202, 210, 222, 0.28);
+            background:
+                radial-gradient(circle at 45% 42%, rgba(179, 187, 199, 0.13), rgba(103, 111, 124, 0.12) 48%, rgba(255, 255, 255, 0.04) 76%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.025) 58%);
+            box-shadow:
+                0 0 18px rgba(135, 144, 158, 0.16),
+                inset 18px 14px 34px rgba(255, 255, 255, 0.08),
+                inset -20px -24px 34px rgba(0, 0, 0, 0.18);
+        }
+
+        body:not(.lamp-on) .filament {
+            border-color: rgba(180, 188, 202, 0.42);
+            border-right-color: transparent;
+            border-left-color: transparent;
+            filter: none;
+        }
+
+        body:not(.lamp-on) .filament::before,
+        body:not(.lamp-on) .filament::after {
+            background: rgba(180, 188, 202, 0.28);
+            box-shadow: none;
+        }
+
+        body:not(.lamp-on) .neck {
+            background: linear-gradient(90deg, rgba(127, 133, 143, 0.12), rgba(208, 214, 224, 0.28), rgba(127, 133, 143, 0.1));
+            border-color: rgba(255, 255, 255, 0.11);
+        }
+
+        body:not(.lamp-on) #status-value {
+            color: #c8ced8;
+        }
+
+        body:not(.lamp-on) .toggle {
+            background: linear-gradient(180deg, #f0f4fb, #cfd7e5);
+            color: #151b23;
+            box-shadow:
+                0 16px 34px rgba(0, 0, 0, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.78);
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 24px 14px;
+            }
+
+            .lamp-stage {
+                margin-bottom: 22px;
+            }
+
+            .status-row {
+                width: 100%;
+                border-radius: 18px;
+            }
+
+            .toggle {
+                min-height: 68px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="lamp-stage" aria-hidden="true">
+            <div class="lamp-shell">
+                <div class="bulb">
+                    <div class="filament"></div>
+                </div>
+                <div class="neck"></div>
+                <div class="base"></div>
+            </div>
+        </div>
+
+        <div class="status-row" aria-live="polite">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 8v4l3 2"></path>
+            </svg>
+            <span>статус: <span id="status-value">загрузка</span></span>
+        </div>
+
+        <button type="button" id="toggle" class="toggle">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v10"></path>
+                <path d="M18.4 6.6a9 9 0 1 1-12.8 0"></path>
+            </svg>
+            <span>Переключить</span>
+        </button>
+
+        <section class="status-control" aria-labelledby="status-control-title">
+            <h1 id="status-control-title">Управление статусом</h1>
+            <p>Запрос к <code>/toggle</code> изменяет состояние лампы.</p>
+        </section>
+    </main>
+
+    <script>
+        const statusValue = document.getElementById("status-value");
+        const toggleButton = document.getElementById("toggle");
+
+        function render(isOn) {
+            document.body.classList.toggle("lamp-on", isOn);
+            statusValue.textContent = String(isOn);
+            toggleButton.setAttribute("aria-pressed", String(isOn));
+        }
+
+        async function loadStatus() {
+            const response = await fetch("/status");
+            const data = await response.json();
+            render(data.is_on);
+        }
+
+        async function toggleLamp() {
+            toggleButton.disabled = true;
+            try {
+                const response = await fetch("/toggle", { method: "POST" });
+                const data = await response.json();
+                render(data.is_on);
+            } finally {
+                toggleButton.disabled = false;
+            }
+        }
+
+        toggleButton.addEventListener("click", toggleLamp);
+        loadStatus();
+    </script>
+</body>
+</html>
